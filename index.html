@@ -18,39 +18,37 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--txt);
   font-family:'Consolas','Courier New',monospace;font-size:13px}
 
 /* RAIN */
-#rain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04}
+#rain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03}
 
 /* HEADER */
 header{
   position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:300;
-  background:#000000f8;border-bottom:1px solid var(--bdr);
+  background:#000000;border-bottom:1px solid var(--bdr);
   display:flex;align-items:center;padding:0 14px;gap:10px;
-  backdrop-filter:blur(10px);
 }
 .logo{
   font-size:1.15rem;font-weight:800;letter-spacing:3px;color:#ffffff;
   white-space:nowrap;display:flex;align-items:center;gap:7px;
 }
-.logo span.logo-glow{color:var(--g);text-shadow:0 0 10px var(--g)}
-.logo-icon{animation:gp 3s ease-in-out infinite}
-@keyframes gp{0%,100%{opacity:.7}50%{opacity:1;text-shadow:0 0 18px var(--g)}}
+.logo-icon{color:var(--g);text-shadow:0 0 10px var(--g)}
 
 .h-mid{flex:1;display:flex;align-items:center;gap:8px;justify-content:center;min-width:0}
 
 /* quick-select */
 #qs{
-  background:#0c0c0c;color:#cccccc;border:1px solid var(--bdr);
+  background:#080808;color:#cccccc;border:1px solid var(--bdr);
   border-radius:var(--r);padding:5px 10px;font-family:inherit;font-size:.8rem;
   cursor:pointer;outline:none;max-width:220px;transition:.18s;
 }
 #qs:focus,#qs:hover{border-color:var(--g)}
-optgroup{color:#555}
+optgroup{color:#555;background:#080808}
+option{background:#080808;color:#cccccc}
 
 /* version picker */
 #vp{
-  background:#0c0c0c;color:#888;border:1px solid var(--bdr);
+  background:#080808;color:#888;border:1px solid var(--bdr);
   border-radius:var(--r);padding:5px 8px;font-family:inherit;font-size:.73rem;
-  cursor:pointer;outline:none;max-width:160px;transition:.18s;
+  cursor:pointer;outline:none;max-width:180px;transition:.18s;
 }
 #vp:focus{border-color:var(--g)}
 
@@ -63,14 +61,137 @@ optgroup{color:#555}
 }
 .btn:active{transform:scale(.96)}
 .b-run{background:#000;color:var(--g);border-color:var(--g)}
-.b-run:hover:not([disabled]){background:var(--g);color:#000;box-shadow:0 0 20px var(--g)}
+.b-run:hover:not([disabled]){background:var(--g);color:#000;box-shadow:0 0 16px var(--g)}
 .b-run[disabled]{opacity:.35;cursor:not-allowed}
 .b-sav{color:#b0b0b0;border-color:#2a2a2a;background:#000}
-.b-sav:hover{background:#1a1a1a;border-color:#555;color:#fff}
+.b-sav:hover{background:#141414;border-color:#555;color:#fff}
 .b-dl {color:#b0b0b0;border-color:#2a2a2a;background:#000}
-.b-dl:hover{background:#1a1a1a;border-color:#555;color:#fff}
+.b-dl:hover{background:#141414;border-color:#555;color:#fff}
 .b-ico{color:#666;border-color:#1e1e1e;background:transparent;padding:6px 10px}
 .b-ico:hover{color:#ccc;border-color:#444}
+
+/* ── APP ── */
+#app{
+  position:fixed;top:var(--hh);left:0;right:0;bottom:var(--sb);
+  display:flex;overflow:hidden;z-index:1;background:#000;
+}
+
+/* ── LANG PANEL ── */
+#lp{
+  width:270px;background:#000000;border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:width .22s ease;
+}
+#lp.shut{width:0}
+
+.ph{
+  padding:9px 12px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.67rem;letter-spacing:2px;color:#444;text-transform:uppercase;
+  background:#000;
+}
+.ph b{color:#888}
+
+#lsrch{
+  margin:7px;padding:7px 10px;
+  background:#080808;border:1px solid var(--bdr);color:#ccc;
+  border-radius:var(--r);font-family:inherit;font-size:.8rem;outline:none;
+}
+#lsrch:focus{border-color:var(--g)}
+#lsrch::placeholder{color:#333}
+
+#ll{flex:1;overflow-y:auto;padding:4px 0;background:#000}
+#ll::-webkit-scrollbar{width:3px}
+#ll::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:3px}
+
+/* skeleton */
+.sk{height:30px;margin:3px 10px;border-radius:4px;
+  background:linear-gradient(90deg,#050505 25%,#0f0f0f 50%,#050505 75%);
+  background-size:200%;animation:sk 1.4s infinite}
+@keyframes sk{0%{background-position:200%}100%{background-position:-200%}}
+
+.cat-hdr{
+  padding:6px 12px 2px;font-size:.63rem;letter-spacing:1.5px;
+  color:#3a3a3a;text-transform:uppercase;
+  border-top:1px solid #111;margin-top:4px;
+}
+.cat-hdr:first-child{border-top:none;margin-top:0}
+
+.li{
+  padding:7px 12px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;transition:background .12s;font-size:.82rem;color:#777;
+}
+.li:hover{background:#0d0d0d;color:#ddd}
+.li.on{
+  background:#111111;border-left:2px solid var(--g);
+  padding-left:10px;color:#ffffff;
+}
+.li-ico{font-size:.95rem;min-width:18px;text-align:center}
+.li-name{flex:1}
+.li-ver{font-size:.6rem;color:#333;white-space:nowrap}
+.li-cnt{font-size:.55rem;color:#555;background:#0d0d0d;
+  padding:1px 5px;border-radius:3px;border:1px solid #1a1a1a}
+
+/* ── EDITOR AREA ── */
+#ea{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:#000000}
+
+/* tab bar */
+#tb{
+  display:flex;align-items:center;background:#000000;
+  border-bottom:1px solid var(--bdr);height:36px;padding:0 6px;
+  gap:3px;overflow-x:auto;flex-shrink:0;
+}
+#tb::-webkit-scrollbar{height:2px}
+#tb::-webkit-scrollbar-thumb{background:#1a1a1a}
+.tab{
+  display:flex;align-items:center;gap:5px;padding:4px 11px;
+  border:1px solid #1a1a1a;border-radius:4px 4px 0 0;
+  font-size:.76rem;color:#666;cursor:pointer;
+  transition:.12s;white-space:nowrap;flex-shrink:0;background:#050505;
+}
+.tab:hover{color:#bbb;background:#0d0d0d}
+.tab.on{
+  background:#121212;color:#ffffff;
+  border-color:var(--bdr);border-bottom-color:#121212;
+  border-top:2px solid var(--g);
+}
+.tab-x{font-size:.62rem;opacity:.4}
+.tab-x:hover{opacity:1;color:var(--red)}
+#ntb{
+  margin-left:auto;flex-shrink:0;padding:3px 9px;
+  background:transparent;border:1px dashed #222;
+  color:#555;border-radius:4px;
+  cursor:pointer;font-size:.75rem;font-family:inherit;
+}
+#ntb:hover{border-color:var(--bdr);color:#ccc}
+
+/* monaco */
+#ec{flex:1;position:relative;overflow:hidden;background:#000000}
+#me{width:100%;height:100%;background:#000000}
+
+/* compiler options bar */
+#optbar{
+  display:flex;align-items:center;gap:8px;padding:4px 10px;
+  background:#000000;border-top:1px solid var(--bdr);font-size:.73rem;
+}
+#optbar label{color:#444;white-space:nowrap}
+#copt{
+  flex:1;background:#070707;border:1px solid #1a1a1a;color:#aaa;
+  padding:3px 8px;border-radius:var(--r);font-family:inherit;font-size:.73rem;
+}
+#copt:focus{outline:none;border-color:var(--bdr)}
+
+/* stdin */
+#stdinbar{
+  display:flex;align-items:center;gap:8px;padding:5px 10px;
+  background:#000000;border-top:1px solid var(--bdr);font-size:.73rem;
+}
+#stdinbar label{color:#444;white-space:nowrap}
+#si{
+  flex:1;background:#070707;border:1px solid #1a1a1a;color:#ccc;
+  padding:4px 8px;border-radius:var(--r);font-family:inherit;font-size:.77rem;
+}
+#si:focus{outline:none;border-color:var(--bdr)}
 
 /* ── APP ── */
 #app{
@@ -557,11 +678,22 @@ async function loadWandbox() {
     Object.entries(byLang).forEach(([lang, compilers]) => {
       const m = META[lang] || {icon:'⬡',cat:'Other',mono:'plaintext',ext:'txt',tpl:`// ${lang}\n`};
 
-      // Sort: prefer head versions first, then by version desc
-      const sorted = [...compilers].sort((a,b)=>{
-        const ah=a.name.includes('head')?0:1, bh=b.name.includes('head')?0:1;
-        if(ah!==bh) return ah-bh;
-        return b.name.localeCompare(a.name);
+      // Filter out broken unbuilt containers (e.g. cpython-head has no binary and produces pid1 error; nodejs-head has 500 error)
+      const valid = compilers.filter(c => {
+        if (!c.version && c.name.includes('head')) return false;
+        if (c.name === 'cpython-head' || c.name === 'cpython-2.7-head') return false;
+        if (c.name === 'nodejs-head' || c.name === 'typescript-head') return false;
+        return true;
+      });
+      const candidates = valid.length > 0 ? valid : compilers;
+
+      // Sort: STABLE release versions first (e.g. cpython-3.12.7, nodejs-20.17.0, gcc-13.2.0, rust-1.82.0)!
+      // Never prioritize experimental head versions which frequently crash or lack container binaries.
+      const sorted = [...candidates].sort((a,b)=>{
+        const aHead = a.name.includes('head') ? 1 : 0;
+        const bHead = b.name.includes('head') ? 1 : 0;
+        if (aHead !== bHead) return aHead - bHead;
+        return b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' });
       });
 
       const best = sorted[0];
@@ -756,38 +888,38 @@ require(['vs/editor/editor.main'],()=>{
   monaco.editor.defineTheme('matrix',{
     base:'vs-dark', inherit:true,
     rules:[
-      {token:'',           foreground:'c8ffc8',background:'020d04'},
-      {token:'comment',    foreground:'284828',fontStyle:'italic'},
-      {token:'keyword',    foreground:'00ff41',fontStyle:'bold'},
-      {token:'string',     foreground:'6fff6f'},
-      {token:'number',     foreground:'00cc88'},
-      {token:'type',       foreground:'41ffb0'},
-      {token:'identifier', foreground:'b8ffb8'},
-      {token:'operator',   foreground:'90ff90'},
-      {token:'delimiter',  foreground:'3d7042'},
-      {token:'function',   foreground:'00ff99'},
-      {token:'class',      foreground:'41ffb0'},
-      {token:'variable',   foreground:'c8ffc8'},
+      {token:'',           foreground:'d4d4d4',background:'000000'},
+      {token:'comment',    foreground:'6a737d',fontStyle:'italic'},
+      {token:'keyword',    foreground:'e5c07b',fontStyle:'bold'},
+      {token:'string',     foreground:'98c379'},
+      {token:'number',     foreground:'d19a66'},
+      {token:'type',       foreground:'61afef'},
+      {token:'identifier', foreground:'abb2bf'},
+      {token:'operator',   foreground:'56b6c2'},
+      {token:'delimiter',  foreground:'888888'},
+      {token:'function',   foreground:'61afef'},
+      {token:'class',      foreground:'e5c07b'},
+      {token:'variable',   foreground:'abb2bf'},
     ],
     colors:{
-      'editor.background':               '#020d04',
-      'editor.foreground':               '#c8ffc8',
+      'editor.background':               '#000000',
+      'editor.foreground':               '#d4d4d4',
       'editorCursor.foreground':         '#00ff41',
-      'editor.lineHighlightBackground':  '#060f07',
-      'editor.selectionBackground':      '#002b0baa',
-      'editorLineNumber.foreground':     '#1a4a1a',
-      'editorLineNumber.activeForeground':'#00ff41',
+      'editor.lineHighlightBackground':  '#090909',
+      'editor.selectionBackground':      '#1b2d1f',
+      'editorLineNumber.foreground':     '#333333',
+      'editorLineNumber.activeForeground':'#888888',
       'editor.findMatchBackground':      '#00ff4133',
-      'editorBracketMatch.background':   '#00ff4118',
-      'editorBracketMatch.border':       '#00ff41',
-      'scrollbarSlider.background':      '#0d301040',
-      'scrollbarSlider.hoverBackground': '#00ff4128',
-      'editorGutter.background':         '#020d04',
-      'minimap.background':              '#020d04',
-      'editorWidget.background':         '#060f07',
-      'editorSuggestWidget.background':  '#060f07',
-      'editorSuggestWidget.border':      '#0d3010',
-      'editorSuggestWidget.selectedBackground':'#002b0b',
+      'editorBracketMatch.background':   '#000000',
+      'editorBracketMatch.border':       '#00ff4155',
+      'scrollbarSlider.background':      '#1c1c1c80',
+      'scrollbarSlider.hoverBackground': '#2c2c2c',
+      'editorGutter.background':         '#000000',
+      'minimap.background':              '#000000',
+      'editorWidget.background':         '#0a0a0a',
+      'editorSuggestWidget.background':  '#0a0a0a',
+      'editorSuggestWidget.border':      '#00ff4130',
+      'editorSuggestWidget.selectedBackground':'#181818',
     }
   });
 
@@ -1050,7 +1182,12 @@ function restoreTabs(){
       if(!ENTRIES.length){ setTimeout(tryRestore,120); return; }
       tabs=arr.map(t=>{
         const entry=ENTRIES.find(e=>e.lang===t.lang)||ENTRIES[0];
-        return {id:t.id,entry:{...entry},compiler:t.compiler||entry.compiler,
+        let comp = t.compiler || entry.compiler;
+        // Auto-heal broken legacy head selections (like cpython-head or nodejs-head)
+        if (comp.includes('head') && entry.compiler && !entry.compiler.includes('head')) {
+          comp = entry.compiler;
+        }
+        return {id:t.id,entry:{...entry},compiler:comp,
                 code:t.code||entry.tpl,stdin:t.stdin||'',copt:t.copt||''};
       });
       tc=Math.max(...tabs.map(t=>t.id));
