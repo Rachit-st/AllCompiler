@@ -1,266 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MatrixCode — Online Compiler</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --g:    #00ff41;
-      --gdim: #00cc34;
-      --gdark:#003b0f;
-      --glow: #00ff4133;
-      --bg:   #020d04;
-      --bg2:  #071409;
-      --bg3:  #0a1f0d;
-      --bdr:  #0f3a14;
-      --txt:  #c8ffc8;
-      --dim:  #4a8050;
-      --red:  #ff4141;
-      --yel:  #ffe041;
-      --blu:  #41c8ff;
-      --r:    6px;
-      --ph:   54px;
-    }
-    html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:'Consolas','Courier New',monospace}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MatrixCode — Online Compiler</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00ff41;--gdim:#00cc34;--gdark:#0a0a0a;--glow:#00ff4122;
+  --bg:#000000;--bg2:#080808;--bg3:#101010;--bg4:#141414;
+  --bdr:#00ff4130;--txt:#d8d8d8;--dim:#666666;
+  --red:#ff4141;--yel:#ffe041;--blu:#41c8ff;--pur:#c341ff;
+  --r:6px;--hh:52px;--sb:26px;
+}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--txt);
+  font-family:'Consolas','Courier New',monospace;font-size:13px}
 
-    /* ─── MATRIX RAIN ─── */
-    #rain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07}
+/* RAIN */
+#rain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04}
 
-    /* ─── HEADER ─── */
-    header{
-      position:fixed;top:0;left:0;right:0;height:var(--ph);
-      background:#020d04ee;border-bottom:1px solid var(--bdr);
-      display:flex;align-items:center;padding:0 16px;gap:10px;
-      z-index:200;backdrop-filter:blur(8px);
-    }
-    .logo{font-size:1.2rem;font-weight:700;letter-spacing:3px;color:var(--g);
-      text-shadow:0 0 14px var(--g);white-space:nowrap;display:flex;align-items:center;gap:8px}
-    .logo-sym{font-size:1.5rem;animation:logopulse 2s ease-in-out infinite}
-    @keyframes logopulse{0%,100%{text-shadow:0 0 8px var(--g)}50%{text-shadow:0 0 28px var(--g),0 0 50px var(--g)}}
+/* HEADER */
+header{
+  position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:300;
+  background:#000000f8;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+  backdrop-filter:blur(10px);
+}
+.logo{
+  font-size:1.15rem;font-weight:800;letter-spacing:3px;color:#ffffff;
+  white-space:nowrap;display:flex;align-items:center;gap:7px;
+}
+.logo span.logo-glow{color:var(--g);text-shadow:0 0 10px var(--g)}
+.logo-icon{animation:gp 3s ease-in-out infinite}
+@keyframes gp{0%,100%{opacity:.7}50%{opacity:1;text-shadow:0 0 18px var(--g)}}
 
-    .hbar{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.h-mid{flex:1;display:flex;align-items:center;gap:8px;justify-content:center;min-width:0}
 
-    select.qs{
-      background:var(--bg3);color:var(--g);border:1px solid var(--bdr);
-      border-radius:var(--r);padding:6px 10px;font-family:inherit;font-size:.83rem;
-      cursor:pointer;outline:none;max-width:210px;
-      box-shadow:0 0 8px var(--glow);transition:.2s;
-    }
-    select.qs:focus,select.qs:hover{border-color:var(--g);box-shadow:0 0 14px var(--glow)}
-    optgroup{color:var(--dim)}
+/* quick-select */
+#qs{
+  background:#0c0c0c;color:#cccccc;border:1px solid var(--bdr);
+  border-radius:var(--r);padding:5px 10px;font-family:inherit;font-size:.8rem;
+  cursor:pointer;outline:none;max-width:220px;transition:.18s;
+}
+#qs:focus,#qs:hover{border-color:var(--g)}
+optgroup{color:#555}
 
-    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r);
-      font-family:inherit;font-size:.8rem;cursor:pointer;border:1px solid;transition:.18s;
-      font-weight:700;letter-spacing:.5px;white-space:nowrap}
-    .btn:active{transform:scale(.97)}
+/* version picker */
+#vp{
+  background:#0c0c0c;color:#888;border:1px solid var(--bdr);
+  border-radius:var(--r);padding:5px 8px;font-family:inherit;font-size:.73rem;
+  cursor:pointer;outline:none;max-width:160px;transition:.18s;
+}
+#vp:focus{border-color:var(--g)}
 
-    .b-run{background:var(--gdark);color:var(--g);border-color:var(--g);box-shadow:0 0 10px var(--glow)}
-    .b-run:hover:not(:disabled){background:var(--g);color:var(--bg);box-shadow:0 0 24px var(--g)}
-    .b-run:disabled{opacity:.4;cursor:not-allowed}
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;padding:6px 13px;
+  border-radius:var(--r);font-family:inherit;font-size:.78rem;
+  cursor:pointer;border:1px solid;transition:.16s;font-weight:700;
+  letter-spacing:.4px;white-space:nowrap;flex-shrink:0;
+}
+.btn:active{transform:scale(.96)}
+.b-run{background:#000;color:var(--g);border-color:var(--g)}
+.b-run:hover:not([disabled]){background:var(--g);color:#000;box-shadow:0 0 20px var(--g)}
+.b-run[disabled]{opacity:.35;cursor:not-allowed}
+.b-sav{color:#b0b0b0;border-color:#2a2a2a;background:#000}
+.b-sav:hover{background:#1a1a1a;border-color:#555;color:#fff}
+.b-dl {color:#b0b0b0;border-color:#2a2a2a;background:#000}
+.b-dl:hover{background:#1a1a1a;border-color:#555;color:#fff}
+.b-ico{color:#666;border-color:#1e1e1e;background:transparent;padding:6px 10px}
+.b-ico:hover{color:#ccc;border-color:#444}
 
-    .b-sav{color:var(--yel);border-color:#554d00;background:#111000}
-    .b-sav:hover{background:var(--yel);color:#111000;box-shadow:0 0 14px #ffe04166}
+/* ── APP ── */
+#app{
+  position:fixed;top:var(--hh);left:0;right:0;bottom:var(--sb);
+  display:flex;overflow:hidden;z-index:1;
+}
 
-    .b-dl{color:var(--blu);border-color:#004466;background:#001520}
-    .b-dl:hover{background:var(--blu);color:#001520;box-shadow:0 0 14px #41c8ff44}
+/* ── LANG PANEL ── */
+#lp{
+  width:270px;background:#050505;border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:width .22s ease;
+}
+#lp.shut{width:0}
 
-    .b-gh{color:var(--dim);border-color:var(--bdr);background:transparent}
-    .b-gh:hover{color:var(--g);border-color:var(--gdim)}
+.ph{
+  padding:9px 12px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.67rem;letter-spacing:2px;color:#333;text-transform:uppercase;
+}
+.ph b{color:#888}
 
-    /* ─── LAYOUT ─── */
-    #app{
-      position:fixed;top:var(--ph);left:0;right:0;bottom:28px;
-      display:flex;z-index:1;
-    }
+#lsrch{
+  margin:7px;padding:7px 10px;
+  background:#000;border:1px solid var(--bdr);color:#ccc;
+  border-radius:var(--r);font-family:inherit;font-size:.8rem;outline:none;
+}
+#lsrch:focus{border-color:#00ff4160}
+#lsrch::placeholder{color:#2a2a2a}
 
-    /* ─── LANG PANEL ─── */
-    #lp{
-      width:280px;background:var(--bg2);border-right:1px solid var(--bdr);
-      display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
-      transition:width .22s ease;
-    }
-    #lp.shut{width:0}
-    .ph{
-      padding:10px 12px;border-bottom:1px solid var(--bdr);
-      font-size:.7rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .ph b{color:var(--g)}
-    #ls{
-      margin:8px;padding:7px 10px;
-      background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);
-      color:var(--g);font-family:inherit;font-size:.82rem;outline:none;
-    }
-    #ls:focus{border-color:var(--g);box-shadow:0 0 6px var(--glow)}
-    #ls::placeholder{color:var(--dim)}
+/* version-switcher in panel */
+.lp-version-bar{
+  padding:4px 8px;border-bottom:1px solid var(--bdr);
+  display:none;align-items:center;gap:6px;font-size:.7rem;
+}
+.lp-version-bar.show{display:flex}
+.lp-version-bar label{color:#444}
+#lp-ver{
+  flex:1;background:var(--bg);border:1px solid #1a1a1a;color:#666;
+  border-radius:4px;padding:3px 6px;font-family:inherit;font-size:.72rem;outline:none;
+}
+#lp-ver:focus{border-color:#333}
 
-    #ll{flex:1;overflow-y:auto;padding:2px 0 8px}
-    #ll::-webkit-scrollbar{width:3px}
-    #ll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+#ll{flex:1;overflow-y:auto;padding:4px 0}
+#ll::-webkit-scrollbar{width:3px}
+#ll::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:3px}
 
-    .cat{padding:6px 12px 2px;font-size:.65rem;letter-spacing:1.5px;
-      color:var(--dim);text-transform:uppercase;border-top:1px solid var(--bdr);margin-top:4px}
-    .li{
-      padding:8px 12px;display:flex;align-items:center;gap:9px;
-      cursor:pointer;transition:background .13s;font-size:.83rem;
-    }
-    .li:hover{background:var(--gdark);color:var(--g)}
-    .li.on{background:var(--gdark);color:var(--g);border-left:3px solid var(--g);padding-left:9px;
-      box-shadow:inset 0 0 12px var(--glow)}
-    .li-ico{font-size:1rem;min-width:20px;text-align:center}
-    .li-ver{font-size:.63rem;color:var(--dim);margin-left:auto;white-space:nowrap}
-    .li-badge{font-size:.55rem;padding:1px 5px;border-radius:3px;
-      background:var(--gdark);color:var(--g);border:1px solid var(--bdr)}
+/* skeleton */
+.sk{height:30px;margin:3px 10px;border-radius:4px;
+  background:linear-gradient(90deg,#050505 25%,#0f0f0f 50%,#050505 75%);
+  background-size:200%;animation:sk 1.4s infinite}
+@keyframes sk{0%{background-position:200%}100%{background-position:-200%}}
 
-    /* loading skeleton */
-    .skel{height:32px;margin:4px 12px;border-radius:4px;
-      background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);
-      background-size:200% 100%;animation:skel 1.5s infinite}
-    @keyframes skel{0%{background-position:200%}100%{background-position:-200%}}
+.cat-hdr{
+  padding:6px 12px 2px;font-size:.63rem;letter-spacing:1.5px;
+  color:#282828;text-transform:uppercase;
+  border-top:1px solid #0f0f0f;margin-top:4px;
+}
+.cat-hdr:first-child{border-top:none;margin-top:0}
 
-    /* ─── EDITOR AREA ─── */
-    #ea{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.li{
+  padding:7px 12px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;transition:background .12s;font-size:.82rem;color:#777;
+}
+.li:hover{background:#0d0d0d;color:#ccc}
+.li.on{
+  background:#0a0a0a;border-left:2px solid var(--g);
+  padding-left:10px;color:#fff;
+}
+.li-ico{font-size:.95rem;min-width:18px;text-align:center}
+.li-name{flex:1}
+.li-ver{font-size:.6rem;color:#2a2a2a;white-space:nowrap}
+.li-cnt{font-size:.55rem;color:#444;background:#0d0d0d;
+  padding:1px 5px;border-radius:3px;border:1px solid #1a1a1a}
 
-    #tb{
-      display:flex;align-items:center;background:var(--bg2);
-      border-bottom:1px solid var(--bdr);padding:0 8px;height:38px;gap:3px;overflow-x:auto;
-    }
-    #tb::-webkit-scrollbar{height:2px}
-    #tb::-webkit-scrollbar-thumb{background:var(--bdr)}
-    .tab{
-      padding:5px 12px;border:1px solid transparent;border-radius:4px 4px 0 0;
-      font-size:.78rem;color:var(--dim);cursor:pointer;white-space:nowrap;
-      display:flex;align-items:center;gap:6px;transition:.13s;flex-shrink:0;
-    }
-    .tab.on{background:var(--bg3);color:var(--g);border-color:var(--bdr);border-bottom-color:var(--bg3)}
-    .tab-x{font-size:.65rem;opacity:.45;margin-left:2px}
-    .tab-x:hover{opacity:1;color:var(--red)}
-    #ntb{
-      margin-left:auto;padding:3px 9px;background:transparent;
-      border:1px dashed var(--bdr);color:var(--dim);border-radius:4px;
-      cursor:pointer;font-size:.78rem;font-family:inherit;flex-shrink:0;
-    }
-    #ntb:hover{border-color:var(--g);color:var(--g)}
+/* ── EDITOR AREA ── */
+#ea{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-    #ec{flex:1;position:relative;overflow:hidden}
-    #me{width:100%;height:100%}
+/* tab bar */
+#tb{
+  display:flex;align-items:center;background:var(--bg2);
+  border-bottom:1px solid var(--bdr);height:36px;padding:0 6px;
+  gap:3px;overflow-x:auto;flex-shrink:0;
+}
+#tb::-webkit-scrollbar{height:2px}
+#tb::-webkit-scrollbar-thumb{background:var(--bdr)}
+.tab{
+  display:flex;align-items:center;gap:5px;padding:4px 11px;
+  border:1px solid transparent;border-radius:4px 4px 0 0;
+  font-size:.76rem;color:#555;cursor:pointer;
+  transition:.12s;white-space:nowrap;flex-shrink:0;
+}
+.tab.on{background:#111;color:#ddd;border-color:#1e1e1e;border-bottom-color:#111}
+.tab-x{font-size:.62rem;opacity:.4}
+.tab-x:hover{opacity:1;color:var(--red)}
+#ntb{
+  margin-left:auto;flex-shrink:0;padding:3px 9px;
+  background:transparent;border:1px dashed #1e1e1e;
+  color:#444;border-radius:4px;
+  cursor:pointer;font-size:.75rem;font-family:inherit;
+}
+#ntb:hover{border-color:var(--bdr);color:#aaa}
 
-    #stdinbar{
-      background:var(--bg2);border-top:1px solid var(--bdr);
-      padding:5px 12px;display:flex;align-items:center;gap:8px;font-size:.76rem;
-    }
-    #stdinbar label{color:var(--dim);white-space:nowrap}
-    #si{
-      flex:1;background:var(--bg);border:1px solid var(--bdr);color:var(--txt);
-      padding:4px 8px;border-radius:var(--r);font-family:inherit;font-size:.78rem;
-    }
-    #si:focus{outline:none;border-color:var(--gdim)}
+/* monaco */
+#ec{flex:1;position:relative;overflow:hidden}
+#me{width:100%;height:100%}
 
-    /* ─── OUTPUT ─── */
-    #op{
-      width:380px;display:flex;flex-direction:column;background:var(--bg2);
-      border-left:1px solid var(--bdr);overflow:hidden;flex-shrink:0;
-    }
-    .oph{
-      padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:.7rem;
-      letter-spacing:2px;text-transform:uppercase;color:var(--dim);
-      display:flex;align-items:center;gap:9px;
-    }
-    .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0}
-    .dot.run{background:var(--yel);box-shadow:0 0 8px var(--yel);animation:dp .7s infinite alternate}
-    .dot.ok {background:var(--g);box-shadow:0 0 8px var(--g)}
-    .dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
-    @keyframes dp{from{opacity:1}to{opacity:.25}}
+/* compiler options bar */
+#optbar{
+  display:flex;align-items:center;gap:8px;padding:4px 10px;
+  background:#080808;border-top:1px solid var(--bdr);font-size:.73rem;
+}
+#optbar label{color:#444;white-space:nowrap}
+#copt{
+  flex:1;background:#000;border:1px solid #1a1a1a;color:#888;
+  padding:3px 8px;border-radius:var(--r);font-family:inherit;font-size:.73rem;
+}
+#copt:focus{outline:none;border-color:var(--bdr)}
 
-    .otabs{display:flex;border-bottom:1px solid var(--bdr)}
-    .ot{
-      flex:1;padding:7px;text-align:center;font-size:.72rem;
-      color:var(--dim);cursor:pointer;transition:.13s;letter-spacing:1px;
-    }
-    .ot.on{color:var(--g);border-bottom:2px solid var(--g);background:var(--bg3)}
-    .ot:hover{color:var(--gdim)}
+/* stdin */
+#stdinbar{
+  display:flex;align-items:center;gap:8px;padding:5px 10px;
+  background:#080808;border-top:1px solid var(--bdr);font-size:.73rem;
+}
+#stdinbar label{color:#444;white-space:nowrap}
+#si{
+  flex:1;background:#000;border:1px solid #1a1a1a;color:#bbb;
+  padding:4px 8px;border-radius:var(--r);font-family:inherit;font-size:.77rem;
+}
+#si:focus{outline:none;border-color:var(--bdr)}
 
-    #oc{flex:1;overflow-y:auto;position:relative}
-    #oc::-webkit-scrollbar{width:3px}
-    #oc::-webkit-scrollbar-thumb{background:var(--bdr)}
-    .opane{display:none;padding:12px;font-size:.81rem;line-height:1.75;white-space:pre-wrap;word-break:break-all;height:100%}
-    .opane.on{display:block}
-    #po-out{color:var(--g)}
-    #po-err{color:var(--red)}
-    #po-inf{color:var(--dim)}
-    .empty-hint{color:var(--dim);text-align:center;margin-top:36px;font-size:.82rem;opacity:.7}
+/* ── OUTPUT PANEL ── */
+#op{
+  width:360px;display:flex;flex-direction:column;
+  background:#080808;border-left:1px solid var(--bdr);
+  overflow:hidden;flex-shrink:0;
+}
+.oph{
+  padding:8px 12px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;gap:8px;
+  font-size:.67rem;letter-spacing:2px;color:#444;text-transform:uppercase;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s}
+.dot.run{background:var(--yel);box-shadow:0 0 8px var(--yel);animation:dp .65s infinite alternate}
+.dot.ok {background:var(--g);box-shadow:0 0 6px var(--g)}
+.dot.err{background:var(--red);box-shadow:0 0 6px var(--red)}
+@keyframes dp{from{opacity:1}to{opacity:.2}}
 
-    .statrow{
-      display:flex;gap:12px;padding:8px 12px;border-top:1px solid var(--bdr);
-      font-size:.72rem;color:var(--dim);flex-wrap:wrap;
-    }
-    .sv{color:var(--g);font-weight:700}
+.otabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.ot{flex:1;padding:7px;text-align:center;font-size:.7rem;color:#444;
+  cursor:pointer;transition:.13s;letter-spacing:1px}
+.ot.on{color:#ccc;border-bottom:2px solid var(--bdr);background:#0d0d0d}
+.ot:hover{color:#aaa}
 
-    /* ─── RESIZERS ─── */
-    .rz{width:5px;background:transparent;cursor:col-resize;transition:background .18s;flex-shrink:0}
-    .rz:hover,.rz.drag{background:var(--g)}
+#oc{flex:1;overflow-y:auto;min-height:0}
+#oc::-webkit-scrollbar{width:3px}
+#oc::-webkit-scrollbar-thumb{background:#1a1a1a}
+.opane{display:none;padding:12px;font-size:.79rem;line-height:1.75;
+  white-space:pre-wrap;word-break:break-all}
+.opane.on{display:block}
+#po-out{color:#e0e0e0}
+#po-err{color:#ff6b6b}
+#po-inf{color:#666}
+.hint{color:#333;text-align:center;margin-top:38px;font-size:.8rem}
 
-    /* ─── TOAST ─── */
-    #toast{
-      position:fixed;bottom:36px;right:24px;z-index:9999;
-      padding:9px 18px;border-radius:var(--r);font-size:.8rem;
-      box-shadow:0 0 18px var(--glow);pointer-events:none;
-      opacity:0;transform:translateY(8px);transition:.28s;
-    }
-    #toast.show{opacity:1;transform:translateY(0)}
+.statrow{
+  display:flex;flex-wrap:wrap;gap:10px;padding:7px 12px;
+  border-top:1px solid var(--bdr);font-size:.69rem;color:#444;flex-shrink:0;
+}
+.sv{color:#aaa;font-weight:700}
 
-    /* ─── MODAL ─── */
-    .mo{
-      position:fixed;inset:0;background:#000000bb;z-index:500;
-      display:flex;align-items:center;justify-content:center;
-      opacity:0;pointer-events:none;transition:opacity .2s;
-    }
-    .mo.open{opacity:1;pointer-events:all}
-    .mb{
-      background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;
-      padding:26px 30px;min-width:360px;max-width:90vw;
-      box-shadow:0 0 40px var(--glow);
-    }
-    .mt{font-size:.95rem;color:var(--g);letter-spacing:2px;margin-bottom:16px;text-transform:uppercase}
-    .mb label{font-size:.74rem;color:var(--dim);display:block;margin-bottom:4px}
-    .mb input{
-      width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);
-      color:var(--g);padding:7px 10px;font-family:inherit;font-size:.82rem;margin-bottom:12px;
-    }
-    .mb input:focus{outline:none;border-color:var(--g)}
-    .macts{display:flex;gap:8px;margin-top:4px}
+/* ── RESIZERS ── */
+.rz{width:4px;background:transparent;cursor:col-resize;transition:.16s;flex-shrink:0}
+.rz:hover,.rz.drag{background:var(--bdr)}
 
-    /* ─── STATUS BAR ─── */
-    #sbar{
-      position:fixed;bottom:0;left:0;right:0;height:28px;
-      background:var(--bg2);border-top:1px solid var(--bdr);
-      display:flex;align-items:center;gap:20px;padding:0 14px;
-      font-size:.67rem;color:var(--dim);z-index:200;
-    }
-    #sbar kbd{
-      background:var(--bg3);border:1px solid var(--bdr);
-      padding:0 4px;border-radius:3px;color:var(--g);font-family:inherit;font-size:.65rem;
-    }
-    #sbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+/* ── STATUS BAR ── */
+#sb{
+  position:fixed;bottom:0;left:0;right:0;height:var(--sb);z-index:300;
+  background:#000;border-top:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 12px;gap:16px;font-size:.64rem;color:#444;
+}
+#sb kbd{background:#0d0d0d;border:1px solid var(--bdr);padding:0 4px;
+  border-radius:3px;color:#aaa;font-family:inherit;font-size:.62rem}
+#sb-r{margin-left:auto;display:flex;gap:14px;align-items:center}
+#sb-lang{color:#ccc;font-weight:700}
+#sb-backend{color:#333}
 
-    /* spinner */
-    .sp{display:inline-block;width:13px;height:13px;border:2px solid var(--gdark);
-      border-top-color:var(--g);border-radius:50%;animation:spin .55s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:34px;right:20px;z-index:9999;padding:8px 16px;
+  border-radius:var(--r);font-size:.78rem;pointer-events:none;
+  opacity:0;transform:translateY(6px);transition:.26s;
+}
+#toast.show{opacity:1;transform:translateY(0)}
 
-    /* scrollbar global */
-    ::-webkit-scrollbar{width:5px;height:5px}
-    ::-webkit-scrollbar-track{background:var(--bg)}
-    ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+/* ── MODAL ── */
+.mo{position:fixed;inset:0;background:#000000d8;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.mo.open{opacity:1;pointer-events:all}
+.mb{background:#080808;border:1px solid var(--bdr);border-radius:10px;
+  padding:24px 28px;min-width:340px;max-width:92vw;
+  box-shadow:0 0 30px #00000088}
+.mt{font-size:.9rem;color:#ccc;letter-spacing:2px;margin-bottom:14px;text-transform:uppercase}
+.mb label{font-size:.72rem;color:#444;display:block;margin-bottom:4px}
+.mb input{width:100%;background:#000;border:1px solid var(--bdr);
+  border-radius:var(--r);color:#ccc;padding:7px 10px;
+  font-family:inherit;font-size:.8rem;margin-bottom:10px}
+.mb input:focus{outline:none;border-color:#555}
+.macts{display:flex;gap:8px;margin-top:4px}
 
-    @media(max-width:860px){
-      #op{display:none}
-      #lp{width:240px}
-    }
-  </style>
+/* spinner */
+.sp{display:inline-block;width:12px;height:12px;
+  border:2px solid #111;border-top-color:var(--g);
+  border-radius:50%;animation:spin .5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#000}
+::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#2a2a2a}
+
+@media(max-width:860px){#op{display:none}#lp{width:200px}}
+</style>
 </head>
 <body>
 
@@ -268,32 +303,35 @@
 
 <!-- ═══ HEADER ═══ -->
 <header>
-  <div class="logo"><span class="logo-sym">⬡</span> MATRIX<span style="color:var(--dim);font-weight:300">CODE</span></div>
+  <div class="logo"><span class="logo-icon">⬡</span>MATRIX<span style="color:var(--dim);font-weight:300">CODE</span></div>
 
-  <div class="hbar">
-    <button class="btn b-gh" id="togLang" title="Toggle language panel (Ctrl+L)">☰</button>
-    <select class="qs" id="qs" title="Quick-switch language"></select>
-    <button class="btn b-run" id="runBtn"><span id="ri">▶</span><span id="rt">RUN</span></button>
+  <div class="h-mid">
+    <button class="btn b-ico" id="togLang" title="Toggle language panel  Ctrl+L">☰</button>
+    <select id="qs" title="Quick switch language"></select>
+    <select id="vp" title="Compiler version"></select>
+    <button class="btn b-run" id="runBtn">
+      <span id="ri">▶</span><span id="rt">RUN</span>
+    </button>
   </div>
 
-  <div style="display:flex;gap:7px;align-items:center">
+  <div style="display:flex;gap:6px;align-items:center">
     <button class="btn b-sav" id="savBtn">💾 SAVE</button>
     <button class="btn b-dl"  id="dlBtn" >⬇ DOWNLOAD</button>
-    <button class="btn b-gh"  id="cfgBtn">⚙</button>
+    <button class="btn b-ico" id="cfgBtn" title="Settings">⚙</button>
   </div>
 </header>
 
 <!-- ═══ APP ═══ -->
 <div id="app">
 
-  <!-- LANG PANEL -->
+  <!-- LANGUAGE PANEL -->
   <div id="lp">
-    <div class="ph"><span>// <b>LANGUAGES</b></span><span id="lc" style="font-weight:400"></span></div>
-    <input type="text" id="ls" placeholder="🔍 Search…" autocomplete="off"/>
+    <div class="ph"><span>// <b>LANGUAGES</b></span><span id="lc">loading…</span></div>
+    <input type="text" id="lsrch" placeholder="🔍  Search languages…" autocomplete="off"/>
     <div id="ll">
-      <!-- skeletons while loading -->
-      <div class="skel"></div><div class="skel"></div><div class="skel"></div>
-      <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+      <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+      <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+      <div class="sk"></div><div class="sk"></div>
     </div>
   </div>
 
@@ -301,8 +339,12 @@
 
   <!-- EDITOR -->
   <div id="ea">
-    <div id="tb"><button id="ntb">＋ New Tab</button></div>
+    <div id="tb"><button id="ntb">＋ Tab</button></div>
     <div id="ec"><div id="me"></div></div>
+    <div id="optbar">
+      <label>Compiler flags:</label>
+      <input type="text" id="copt" placeholder="e.g. -O2 -std=c++17  (optional)"/>
+    </div>
     <div id="stdinbar">
       <label>STDIN ›</label>
       <input type="text" id="si" placeholder="Optional stdin for your program…"/>
@@ -320,433 +362,583 @@
       <div class="ot"    data-p="inf">INFO</div>
     </div>
     <div id="oc">
-      <div class="opane on" id="po-out"><span class="empty-hint">// output will appear here…</span></div>
+      <div class="opane on" id="po-out"><span class="hint">▶  Run your code to see output</span></div>
       <div class="opane"    id="po-err"></div>
       <div class="opane"    id="po-inf"></div>
     </div>
     <div class="statrow" id="sr" style="display:none">
       <span>Exit: <span class="sv" id="sx">—</span></span>
       <span>Signal: <span class="sv" id="ss">—</span></span>
-      <span id="st-api" style="margin-left:auto;font-size:.65rem">Wandbox API</span>
     </div>
   </div>
 </div>
 
 <!-- STATUS BAR -->
-<div id="sbar">
+<div id="sb">
   <span><kbd>Ctrl+Enter</kbd> Run</span>
   <span><kbd>Ctrl+S</kbd> Save</span>
   <span><kbd>Ctrl+D</kbd> Download</span>
   <span><kbd>Ctrl+T</kbd> New Tab</span>
-  <span><kbd>Ctrl+L</kbd> Lang Panel</span>
-  <div id="sbar-right">
-    <span id="sb-lang" style="color:var(--g)">—</span>
-    <span id="sb-info">Wandbox · Free · No key needed</span>
+  <span><kbd>Ctrl+L</kbd> Panel</span>
+  <div id="sb-r">
+    <span id="sb-lang">—</span>
+    <span id="sb-backend">Wandbox · Free · No key required</span>
   </div>
 </div>
 
 <!-- TOAST -->
 <div id="toast"></div>
 
-<!-- SETTINGS MODAL -->
+<!-- SETTINGS -->
 <div class="mo" id="mo">
   <div class="mb">
-    <div class="mt">// Settings</div>
+    <div class="mt">// Editor Settings</div>
     <label>Font Size (px)</label>
     <input type="number" id="cf" value="14" min="10" max="28"/>
-    <label>Tab Size (spaces)</label>
+    <label>Tab Size</label>
     <input type="number" id="ct" value="4"  min="2"  max="8"/>
-    <label>Word Wrap</label>
-    <input type="text"   id="cw" value="on" placeholder="on / off"/>
+    <label>Word Wrap (on / off)</label>
+    <input type="text"   id="cw" value="on"/>
+    <label>Minimap (on / off)</label>
+    <input type="text"   id="cm" value="on"/>
     <div class="macts">
       <button class="btn b-run" id="mo-ok">APPLY</button>
-      <button class="btn b-gh"  id="mo-x" >CANCEL</button>
+      <button class="btn b-ico" id="mo-x">CANCEL</button>
     </div>
   </div>
 </div>
 
 <script>
 'use strict';
-// ═══════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════
 //  MATRIX RAIN
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 ;(()=>{
-  const cv=document.getElementById('rain'),cx=cv.getContext('2d');
+  const cv=document.getElementById('rain'),ctx=cv.getContext('2d');
   const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789{}[]<>=+-*/|;:.!@#$%^&~?01';
   let cols,drops;
-  const res=()=>{cv.width=innerWidth;cv.height=innerHeight;cols=~~(cv.width/16);drops=Array(cols).fill(1)};
-  res(); window.addEventListener('resize',res);
+  const resize=()=>{cv.width=innerWidth;cv.height=innerHeight;cols=~~(cv.width/16);drops=Array(cols).fill(1)};
+  resize(); addEventListener('resize',resize);
   setInterval(()=>{
-    cx.fillStyle='rgba(2,13,4,.06)'; cx.fillRect(0,0,cv.width,cv.height);
-    cx.fillStyle='#00ff41'; cx.font='13px monospace';
+    ctx.fillStyle='rgba(2,13,4,.055)'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle='#00ff41'; ctx.font='13px monospace';
     drops.forEach((y,i)=>{
-      cx.fillText(ch[~~(Math.random()*ch.length)],i*16,y*16);
+      ctx.fillText(ch[~~(Math.random()*ch.length)],i*16,y*16);
       if(y*16>cv.height&&Math.random()>.975)drops[i]=0;
       drops[i]++;
     });
-  },45);
+  },48);
 })();
 
-// ═══════════════════════════════════════════════════
-//  LANGUAGE CATALOGUE  (Wandbox compiler mapping)
-//  Each entry: { name, icon, cat, compiler, ext, monacoLang, template }
-//  "compiler" must match a name from Wandbox /api/list.json
-// ═══════════════════════════════════════════════════
-const CATALOG = [
-  // ── Scripting ─────────────────────────────────
-  { name:'Python 3',    icon:'🐍', cat:'Scripting', compiler:'cpython-head',      ext:'py',    mono:'python',      tpl:'# Python 3\nprint("Hello, Matrix!")\n' },
-  { name:'Python 2',    icon:'🐍', cat:'Scripting', compiler:'cpython-2.7-head',  ext:'py',    mono:'python',      tpl:'print "Hello, Matrix!"\n' },
-  { name:'Ruby',        icon:'💎', cat:'Scripting', compiler:'ruby-head',         ext:'rb',    mono:'ruby',        tpl:'puts "Hello, Matrix!"\n' },
-  { name:'PHP',         icon:'🐘', cat:'Scripting', compiler:'php-head',          ext:'php',   mono:'php',         tpl:'<?php\necho "Hello, Matrix!\\n";\n' },
-  { name:'Perl',        icon:'🐪', cat:'Scripting', compiler:'perl-head',         ext:'pl',    mono:'perl',        tpl:'print "Hello, Matrix!\\n";\n' },
-  { name:'Lua',         icon:'🌙', cat:'Scripting', compiler:'lua-head',          ext:'lua',   mono:'lua',         tpl:'print("Hello, Matrix!")\n' },
-  // ── Web ───────────────────────────────────────
-  { name:'JavaScript',  icon:'🟨', cat:'Web',       compiler:'nodejs-head',       ext:'js',    mono:'javascript',  tpl:'// Node.js\nconsole.log("Hello, Matrix!");\n' },
-  { name:'TypeScript',  icon:'🔷', cat:'Web',       compiler:'typescript-head',   ext:'ts',    mono:'typescript',  tpl:'const msg: string = "Hello, Matrix!";\nconsole.log(msg);\n' },
-  { name:'CoffeeScript',icon:'☕', cat:'Web',       compiler:'coffeescript-head', ext:'coffee',mono:'coffeescript', tpl:'console.log "Hello, Matrix!"\n' },
-  // ── Systems ───────────────────────────────────
-  { name:'C (GCC)',     icon:'🔵', cat:'Systems',   compiler:'gcc-head',          ext:'c',     mono:'c',           tpl:'#include <stdio.h>\nint main() {\n  printf("Hello, Matrix!\\n");\n  return 0;\n}\n',
-    opts:['--std=c11','--pedantic-errors'] },
-  { name:'C (Clang)',   icon:'🔵', cat:'Systems',   compiler:'clang-head',        ext:'c',     mono:'c',           tpl:'#include <stdio.h>\nint main() {\n  printf("Hello, Matrix!\\n");\n  return 0;\n}\n',
-    opts:['--std=c11'] },
-  { name:'C++',         icon:'🔵', cat:'Systems',   compiler:'gcc-head',          ext:'cpp',   mono:'cpp',         tpl:'#include <iostream>\nusing namespace std;\nint main() {\n  cout << "Hello, Matrix!" << endl;\n  return 0;\n}\n' },
-  { name:'C++ (Clang)', icon:'🔵', cat:'Systems',   compiler:'clang-head',        ext:'cpp',   mono:'cpp',         tpl:'#include <iostream>\nusing namespace std;\nint main() {\n  cout << "Hello, Matrix!" << endl;\n  return 0;\n}\n' },
-  { name:'D',           icon:'🔷', cat:'Systems',   compiler:'dmd-head',          ext:'d',     mono:'plaintext',   tpl:'import std.stdio;\nvoid main() {\n  writeln("Hello, Matrix!");\n}\n' },
-  { name:'Rust',        icon:'🦀', cat:'Systems',   compiler:'rust-head',         ext:'rs',    mono:'rust',        tpl:'fn main() {\n  println!("Hello, Matrix!");\n}\n' },
-  { name:'Go',          icon:'🐹', cat:'Systems',   compiler:'go-head',           ext:'go',    mono:'go',          tpl:'package main\nimport "fmt"\nfunc main() {\n  fmt.Println("Hello, Matrix!")\n}\n' },
-  { name:'Nim',         icon:'👑', cat:'Systems',   compiler:'nim-head',          ext:'nim',   mono:'plaintext',   tpl:'echo "Hello, Matrix!"\n' },
-  // ── JVM ───────────────────────────────────────
-  { name:'Java',        icon:'☕', cat:'JVM',       compiler:'openjdk-head',      ext:'java',  mono:'java',        tpl:'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, Matrix!");\n  }\n}\n' },
-  { name:'Scala',       icon:'🔴', cat:'JVM',       compiler:'scala-head',        ext:'scala', mono:'scala',       tpl:'object Main extends App {\n  println("Hello, Matrix!")\n}\n' },
-  { name:'Kotlin',      icon:'🟣', cat:'JVM',       compiler:'kotlin-head',       ext:'kt',    mono:'kotlin',      tpl:'fun main() {\n  println("Hello, Matrix!")\n}\n' },
-  { name:'Groovy',      icon:'🎸', cat:'JVM',       compiler:'groovy-head',       ext:'groovy',mono:'groovy',      tpl:'println "Hello, Matrix!"\n' },
-  // ── .NET ──────────────────────────────────────
-  { name:'C#',          icon:'🟣', cat:'.NET',      compiler:'mono-head',         ext:'cs',    mono:'csharp',      tpl:'using System;\nclass Program {\n  static void Main() {\n    Console.WriteLine("Hello, Matrix!");\n  }\n}\n' },
-  { name:'F#',          icon:'🟦', cat:'.NET',      compiler:'fsharp-head',       ext:'fs',    mono:'fsharp',      tpl:'printfn "Hello, Matrix!"\n' },
-  // ── Functional ────────────────────────────────
-  { name:'Haskell',     icon:'🟪', cat:'Functional',compiler:'ghc-head',          ext:'hs',    mono:'plaintext',   tpl:'main :: IO ()\nmain = putStrLn "Hello, Matrix!"\n' },
-  { name:'Erlang',      icon:'⚡', cat:'Functional',compiler:'erlang-head',       ext:'erl',   mono:'plaintext',   tpl:'-module(main).\n-export([main/0]).\nmain() -> io:format("Hello, Matrix!~n").\n' },
-  { name:'Elixir',      icon:'🔮', cat:'Functional',compiler:'elixir-head',       ext:'ex',    mono:'plaintext',   tpl:'IO.puts("Hello, Matrix!")\n' },
-  { name:'OCaml',       icon:'🐫', cat:'Functional',compiler:'ocaml-head',        ext:'ml',    mono:'plaintext',   tpl:'let () = print_endline "Hello, Matrix!"\n' },
-  { name:'Common Lisp', icon:'🟩', cat:'Functional',compiler:'sbcl-head',         ext:'lisp',  mono:'plaintext',   tpl:'(format t "Hello, Matrix!~%")\n' },
-  { name:'Scheme',      icon:'🟢', cat:'Functional',compiler:'gauche-head',       ext:'scm',   mono:'scheme',      tpl:'(display "Hello, Matrix!") (newline)\n' },
-  { name:'Clojure',     icon:'🟩', cat:'Functional',compiler:'clojure-head',      ext:'clj',   mono:'clojure',     tpl:'(println "Hello, Matrix!")\n' },
-  // ── Shell ─────────────────────────────────────
-  { name:'Bash',        icon:'🐚', cat:'Shell',     compiler:'bash-head',         ext:'sh',    mono:'shell',       tpl:'#!/bin/bash\necho "Hello, Matrix!"\n' },
-  // ── DB ────────────────────────────────────────
-  { name:'SQLite',      icon:'🗄', cat:'Database',  compiler:'sqlite-head',       ext:'sql',   mono:'sql',         tpl:'SELECT "Hello, Matrix!" AS greeting;\n' },
-  // ── Other ─────────────────────────────────────
-  { name:'R',           icon:'📊', cat:'Other',     compiler:'r-head',            ext:'r',     mono:'r',           tpl:'cat("Hello, Matrix!\\n")\n' },
-  { name:'Swift',       icon:'🟠', cat:'Other',     compiler:'swift-head',        ext:'swift', mono:'swift',       tpl:'print("Hello, Matrix!")\n' },
-  { name:'Pascal',      icon:'🔵', cat:'Other',     compiler:'fpc-head',          ext:'pas',   mono:'pascal',      tpl:'program Hello;\nbegin\n  writeln(\'Hello, Matrix!\');\nend.\n' },
-  { name:'Crystal',     icon:'💎', cat:'Other',     compiler:'crystal-head',      ext:'cr',    mono:'plaintext',   tpl:'puts "Hello, Matrix!"\n' },
-  { name:'Pony',        icon:'🐴', cat:'Other',     compiler:'pony-head',         ext:'pony',  mono:'plaintext',   tpl:'actor Main\n  new create(env: Env) =>\n    env.out.print("Hello, Matrix!")\n' },
-];
-
-// ═══════════════════════════════════════════════════
-//  VERIFY AGAINST LIVE WANDBOX LIST
-// ═══════════════════════════════════════════════════
-let AVAIL = new Set(); // compiler names that Wandbox actually has
-
-async function fetchWandboxList() {
-  try {
-    const r = await fetch('https://wandbox.org/api/list.json');
-    const list = await r.json();
-    list.forEach(c => AVAIL.add(c.name));
-    console.log('[MatrixCode] Wandbox compilers available:', AVAIL.size);
-  } catch(e) {
-    console.warn('[MatrixCode] Could not fetch Wandbox list; proceeding anyway', e);
-  }
-  buildLangPanel();
-  buildQuickSelect();
-}
-fetchWandboxList();
-
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
-let editor = null;
-let tabs = [];
-let activeId = null;
-let tc = 0;
-const S = {
-  fontSize: +( localStorage.getItem('mc_fs') || 14 ),
-  tabSize:  +( localStorage.getItem('mc_ts') || 4  ),
-  wrap:       localStorage.getItem('mc_wr') || 'on',
+// ════════════════════════════════════════════════════
+//  LANGUAGE METADATA  (icons / categories / templates / monaco lang / ext)
+//  Keyed by Wandbox's `language` field (exact match from their API)
+// ════════════════════════════════════════════════════
+const META = {
+  'Python':       {icon:'🐍',cat:'Scripting',  mono:'python',     ext:'py',
+    tpl:'# Python\nprint("Hello, Matrix!")\n'},
+  'Ruby':         {icon:'💎',cat:'Scripting',  mono:'ruby',       ext:'rb',
+    tpl:'puts "Hello, Matrix!"\n'},
+  'PHP':          {icon:'🐘',cat:'Scripting',  mono:'php',        ext:'php',
+    tpl:'<?php\necho "Hello, Matrix!\\n";\n'},
+  'Perl':         {icon:'🐪',cat:'Scripting',  mono:'perl',       ext:'pl',
+    tpl:'print "Hello, Matrix!\\n";\n'},
+  'Lua':          {icon:'🌙',cat:'Scripting',  mono:'lua',        ext:'lua',
+    tpl:'print("Hello, Matrix!")\n'},
+  'JavaScript':   {icon:'🟨',cat:'Web',        mono:'javascript', ext:'js',
+    tpl:'// Node.js\nconsole.log("Hello, Matrix!");\n'},
+  'TypeScript':   {icon:'🔷',cat:'Web',        mono:'typescript', ext:'ts',
+    tpl:'const msg: string = "Hello, Matrix!";\nconsole.log(msg);\n'},
+  'CoffeeScript': {icon:'☕',cat:'Web',        mono:'coffeescript',ext:'coffee',
+    tpl:'console.log "Hello, Matrix!"\n'},
+  'C':            {icon:'🔵',cat:'Systems',    mono:'c',          ext:'c',
+    tpl:'#include <stdio.h>\nint main() {\n    printf("Hello, Matrix!\\n");\n    return 0;\n}\n'},
+  'C++':          {icon:'🔵',cat:'Systems',    mono:'cpp',        ext:'cpp',
+    tpl:'#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, Matrix!" << endl;\n    return 0;\n}\n'},
+  'D':            {icon:'🔷',cat:'Systems',    mono:'plaintext',  ext:'d',
+    tpl:'import std.stdio;\nvoid main() {\n    writeln("Hello, Matrix!");\n}\n'},
+  'Rust':         {icon:'🦀',cat:'Systems',    mono:'rust',       ext:'rs',
+    tpl:'fn main() {\n    println!("Hello, Matrix!");\n}\n'},
+  'Go':           {icon:'🐹',cat:'Systems',    mono:'go',         ext:'go',
+    tpl:'package main\nimport "fmt"\nfunc main() {\n    fmt.Println("Hello, Matrix!")\n}\n'},
+  'Nim':          {icon:'👑',cat:'Systems',    mono:'plaintext',  ext:'nim',
+    tpl:'echo "Hello, Matrix!"\n'},
+  'Crystal':      {icon:'💠',cat:'Systems',    mono:'plaintext',  ext:'cr',
+    tpl:'puts "Hello, Matrix!"\n'},
+  'Zig':          {icon:'⚡',cat:'Systems',    mono:'plaintext',  ext:'zig',
+    tpl:'const std = @import("std");\npub fn main() !void {\n    const stdout = std.io.getStdOut().writer();\n    try stdout.print("Hello, Matrix!\\n", .{});\n}\n'},
+  'Java':         {icon:'☕',cat:'JVM',         mono:'java',       ext:'java',
+    tpl:'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Matrix!");\n    }\n}\n'},
+  'Scala':        {icon:'🔴',cat:'JVM',         mono:'scala',      ext:'scala',
+    tpl:'object Main extends App {\n    println("Hello, Matrix!")\n}\n'},
+  'Kotlin':       {icon:'🟣',cat:'JVM',         mono:'kotlin',     ext:'kt',
+    tpl:'fun main() {\n    println("Hello, Matrix!")\n}\n'},
+  'Groovy':       {icon:'🎸',cat:'JVM',         mono:'plaintext',  ext:'groovy',
+    tpl:'println "Hello, Matrix!"\n'},
+  'Clojure':      {icon:'🟩',cat:'JVM',         mono:'clojure',    ext:'clj',
+    tpl:'(println "Hello, Matrix!")\n'},
+  'C#':           {icon:'🟣',cat:'.NET',        mono:'csharp',     ext:'cs',
+    tpl:'using System;\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, Matrix!");\n    }\n}\n'},
+  'F#':           {icon:'🟦',cat:'.NET',        mono:'fsharp',     ext:'fs',
+    tpl:'printfn "Hello, Matrix!"\n'},
+  'Haskell':      {icon:'🟪',cat:'Functional',  mono:'plaintext',  ext:'hs',
+    tpl:'main :: IO ()\nmain = putStrLn "Hello, Matrix!"\n'},
+  'Erlang':       {icon:'📡',cat:'Functional',  mono:'plaintext',  ext:'erl',
+    tpl:'-module(main).\n-export([main/0]).\nmain() -> io:format("Hello, Matrix!~n").\n'},
+  'Elixir':       {icon:'🔮',cat:'Functional',  mono:'plaintext',  ext:'ex',
+    tpl:'IO.puts("Hello, Matrix!")\n'},
+  'OCaml':        {icon:'🐫',cat:'Functional',  mono:'plaintext',  ext:'ml',
+    tpl:'let () = print_endline "Hello, Matrix!"\n'},
+  'Lisp':         {icon:'🟩',cat:'Functional',  mono:'plaintext',  ext:'lisp',
+    tpl:'(format t "Hello, Matrix!~%")\n'},
+  'Common Lisp':  {icon:'🟩',cat:'Functional',  mono:'plaintext',  ext:'lisp',
+    tpl:'(format t "Hello, Matrix!~%")\n'},
+  'Scheme':       {icon:'🟢',cat:'Functional',  mono:'scheme',     ext:'scm',
+    tpl:'(display "Hello, Matrix!") (newline)\n'},
+  'Bash script':  {icon:'🐚',cat:'Shell',       mono:'shell',      ext:'sh',
+    tpl:'#!/bin/bash\necho "Hello, Matrix!"\n'},
+  'SQL':          {icon:'🗄',cat:'Database',    mono:'sql',        ext:'sql',
+    tpl:'SELECT "Hello, Matrix!" AS greeting;\n'},
+  'R':            {icon:'📊',cat:'Data',        mono:'r',          ext:'r',
+    tpl:'cat("Hello, Matrix!\\n")\n'},
+  'Julia':        {icon:'🔵',cat:'Data',        mono:'plaintext',  ext:'jl',
+    tpl:'println("Hello, Matrix!")\n'},
+  'Swift':        {icon:'🟠',cat:'Other',       mono:'swift',      ext:'swift',
+    tpl:'print("Hello, Matrix!")\n'},
+  'Pascal':       {icon:'🔶',cat:'Other',       mono:'pascal',     ext:'pas',
+    tpl:"program Hello;\nbegin\n  writeln('Hello, Matrix!');\nend.\n"},
+  'Pony':         {icon:'🐴',cat:'Other',       mono:'plaintext',  ext:'pony',
+    tpl:'actor Main\n  new create(env: Env) =>\n    env.out.print("Hello, Matrix!")\n'},
+  'Vim script':   {icon:'🟢',cat:'Other',       mono:'plaintext',  ext:'vim',
+    tpl:'echo "Hello, Matrix!"\n'},
+  'Lazy K':       {icon:'🧩',cat:'Esoteric',    mono:'plaintext',  ext:'lzk',
+    tpl:''},
+  'OpenSSL':      {icon:'🔐',cat:'Other',       mono:'plaintext',  ext:'txt',
+    tpl:'# OpenSSL commands\nversion\n'},
 };
-let currentEntry = CATALOG[0]; // default Python
 
-// ═══════════════════════════════════════════════════
+// Category display order
+const CAT_ORDER = ['Scripting','Web','Systems','JVM','.NET','Functional','Shell','Database','Data','Other','Esoteric'];
+
+// ════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════
+let editor = null;
+let ENTRIES = [];           // [{lang, compiler, version, icon, cat, mono, ext, tpl, allVersions:[{name,ver,display}]}]
+let tabs = [], activeId = null, tc = 0;
+let currentEntry = null;
+
+const CFG = {
+  fs: +(localStorage.getItem('mc_fs')||14),
+  ts: +(localStorage.getItem('mc_ts')||4),
+  wrap: localStorage.getItem('mc_wr')||'on',
+  mini: localStorage.getItem('mc_mi')||'on',
+};
+
+// ════════════════════════════════════════════════════
+//  FETCH WANDBOX COMPILER LIST — build everything dynamically
+// ════════════════════════════════════════════════════
+async function loadWandbox() {
+  try {
+    const resp = await fetch('https://wandbox.org/api/list.json');
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const list = await resp.json();
+
+    // Group by language name
+    const byLang = {};
+    list.forEach(c => {
+      const lang = c.language || 'Unknown';
+      if(!byLang[lang]) byLang[lang] = [];
+      byLang[lang].push(c);
+    });
+
+    ENTRIES = [];
+    Object.entries(byLang).forEach(([lang, compilers]) => {
+      const m = META[lang] || {icon:'⬡',cat:'Other',mono:'plaintext',ext:'txt',tpl:`// ${lang}\n`};
+
+      // Sort: prefer head versions first, then by version desc
+      const sorted = [...compilers].sort((a,b)=>{
+        const ah=a.name.includes('head')?0:1, bh=b.name.includes('head')?0:1;
+        if(ah!==bh) return ah-bh;
+        return b.name.localeCompare(a.name);
+      });
+
+      const best = sorted[0];
+      ENTRIES.push({
+        lang,
+        compiler: best.name,
+        display:  best['display-name'] || best.name,
+        version:  best.version || '',
+        icon:     m.icon,
+        cat:      m.cat,
+        mono:     m.mono,
+        ext:      m.ext,
+        tpl:      m.tpl,
+        allVersions: sorted.map(c=>({
+          name: c.name,
+          ver:  c.version||c.name,
+          display: c['display-name']||c.name,
+        })),
+      });
+    });
+
+    // Sort by category order then name
+    ENTRIES.sort((a,b)=>{
+      const ai=CAT_ORDER.indexOf(a.cat), bi=CAT_ORDER.indexOf(b.cat);
+      const ac=(ai<0?99:ai), bc=(bi<0?99:bi);
+      if(ac!==bc) return ac-bc;
+      return a.lang.localeCompare(b.lang);
+    });
+
+    document.getElementById('lc').textContent = ENTRIES.length+' languages';
+    renderLangPanel(ENTRIES);
+    buildQuickSelect(ENTRIES);
+
+  } catch(e) {
+    document.getElementById('ll').innerHTML =
+      `<div style="padding:14px;color:var(--red);font-size:.8rem">
+        ⚠ Could not load compiler list.<br>Check your internet connection.<br><br>
+        <span style="color:var(--dim)">${e.message}</span>
+       </div>`;
+    document.getElementById('lc').textContent = 'offline';
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  LANGUAGE PANEL RENDER
+// ════════════════════════════════════════════════════
+function renderLangPanel(entries) {
+  const ll = document.getElementById('ll');
+  ll.innerHTML = '';
+
+  const cats = [...new Set(entries.map(e=>e.cat))].sort((a,b)=>{
+    const ai=CAT_ORDER.indexOf(a), bi=CAT_ORDER.indexOf(b);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+
+  cats.forEach(cat=>{
+    const items = entries.filter(e=>e.cat===cat);
+    if(!items.length) return;
+
+    const ch=document.createElement('div');
+    ch.className='cat-hdr';
+    ch.textContent=cat+` (${items.length})`;
+    ll.appendChild(ch);
+
+    items.forEach(entry=>{
+      const el=document.createElement('div');
+      el.className='li'+(currentEntry&&currentEntry.lang===entry.lang?' on':'');
+      el.dataset.lang=entry.lang;
+      el.innerHTML=
+        `<span class="li-ico">${entry.icon}</span>`+
+        `<span class="li-name">${entry.lang}</span>`+
+        (entry.allVersions.length>1
+          ?`<span class="li-cnt">${entry.allVersions.length}v</span>`
+          :'')+
+        `<span class="li-ver">${entry.display}</span>`;
+      el.addEventListener('click',()=>switchEntry(entry));
+      ll.appendChild(el);
+    });
+  });
+}
+
+function highlightPanel(lang) {
+  document.querySelectorAll('#ll .li').forEach(el=>{
+    el.classList.toggle('on', el.dataset.lang===lang);
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  QUICK-SELECT & VERSION PICKER
+// ════════════════════════════════════════════════════
+function buildQuickSelect(entries) {
+  const qs=document.getElementById('qs');
+  qs.innerHTML='';
+  const cats=[...new Set(entries.map(e=>e.cat))].sort((a,b)=>{
+    const ai=CAT_ORDER.indexOf(a),bi=CAT_ORDER.indexOf(b);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+  cats.forEach(cat=>{
+    const og=document.createElement('optgroup');
+    og.label='── '+cat;
+    entries.filter(e=>e.cat===cat).forEach(e=>{
+      const o=document.createElement('option');
+      o.value=e.lang; o.textContent=e.icon+' '+e.lang;
+      og.appendChild(o);
+    });
+    qs.appendChild(og);
+  });
+
+  // If no tab yet, pick Python or first
+  if(!currentEntry){
+    const def = entries.find(e=>e.lang==='Python')||entries[0];
+    if(def){ currentEntry=def; syncQS(def); populateVersions(def); }
+  }
+}
+
+function syncQS(entry){ document.getElementById('qs').value = entry.lang; }
+
+function populateVersions(entry){
+  const vp=document.getElementById('vp');
+  vp.innerHTML='';
+  entry.allVersions.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v.name;
+    o.textContent=v.display+' ('+v.ver+')';
+    vp.appendChild(o);
+  });
+  vp.value = entry.compiler;
+}
+
+document.getElementById('qs').addEventListener('change',e=>{
+  const entry=ENTRIES.find(x=>x.lang===e.target.value);
+  if(entry) switchEntry(entry);
+});
+
+document.getElementById('vp').addEventListener('change',e=>{
+  if(!currentEntry) return;
+  currentEntry.compiler = e.target.value;
+  // update tab
+  const tab=tabs.find(t=>t.id===activeId);
+  if(tab) tab.compiler = e.target.value;
+  document.getElementById('sb-lang').textContent=currentEntry.icon+' '+currentEntry.lang+' ('+e.target.value+')';
+});
+
+// ════════════════════════════════════════════════════
+//  LANG SEARCH
+// ════════════════════════════════════════════════════
+document.getElementById('lsrch').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase().trim();
+  if(!q){ renderLangPanel(ENTRIES); return; }
+  renderLangPanel(ENTRIES.filter(en=>en.lang.toLowerCase().includes(q)||en.cat.toLowerCase().includes(q)));
+});
+
+// ════════════════════════════════════════════════════
+//  SWITCH LANGUAGE ENTRY
+// ════════════════════════════════════════════════════
+function switchEntry(entry, keepCode=false){
+  // save current editor content into tab
+  const cur=tabs.find(t=>t.id===activeId);
+  if(cur && editor){ cur.code=editor.getValue(); cur.stdin=document.getElementById('si').value; }
+
+  currentEntry = {...entry}; // shallow copy so we can mutate compiler independently
+
+  if(cur){
+    const wasTemplate = cur.code.trim() === (cur.entry?.tpl||'').trim();
+    cur.entry    = currentEntry;
+    cur.compiler = currentEntry.compiler;
+    if(wasTemplate) cur.code = currentEntry.tpl;
+    if(editor){
+      editor.setValue(cur.code);
+      monaco.editor.setModelLanguage(editor.getModel(), currentEntry.mono);
+    }
+  }
+
+  syncQS(entry);
+  populateVersions(currentEntry);
+  highlightPanel(entry.lang);
+  renderTabs();
+  updateSbLang();
+}
+
+function updateSbLang(){
+  if(!currentEntry) return;
+  document.getElementById('sb-lang').textContent=
+    currentEntry.icon+' '+currentEntry.lang+' · '+currentEntry.compiler;
+}
+
+// ════════════════════════════════════════════════════
 //  MONACO INIT
-// ═══════════════════════════════════════════════════
-require.config({ paths:{ vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
-require(['vs/editor/editor.main'], ()=>{
+// ════════════════════════════════════════════════════
+require.config({paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'}});
+require(['vs/editor/editor.main'],()=>{
   monaco.editor.defineTheme('matrix',{
     base:'vs-dark', inherit:true,
     rules:[
-      {token:'',           foreground:'c8ffc8', background:'020d04'},
-      {token:'comment',    foreground:'2e5e2e', fontStyle:'italic'},
-      {token:'keyword',    foreground:'00ff41', fontStyle:'bold'},
-      {token:'string',     foreground:'7dff7d'},
+      {token:'',           foreground:'c8ffc8',background:'020d04'},
+      {token:'comment',    foreground:'284828',fontStyle:'italic'},
+      {token:'keyword',    foreground:'00ff41',fontStyle:'bold'},
+      {token:'string',     foreground:'6fff6f'},
       {token:'number',     foreground:'00cc88'},
       {token:'type',       foreground:'41ffb0'},
       {token:'identifier', foreground:'b8ffb8'},
-      {token:'operator',   foreground:'a0ffa0'},
-      {token:'delimiter',  foreground:'4a8050'},
+      {token:'operator',   foreground:'90ff90'},
+      {token:'delimiter',  foreground:'3d7042'},
       {token:'function',   foreground:'00ff99'},
       {token:'class',      foreground:'41ffb0'},
       {token:'variable',   foreground:'c8ffc8'},
     ],
     colors:{
-      'editor.background':              '#020d04',
-      'editor.foreground':              '#c8ffc8',
-      'editorCursor.foreground':        '#00ff41',
-      'editor.lineHighlightBackground': '#071409',
-      'editor.selectionBackground':     '#003b0f99',
-      'editorLineNumber.foreground':    '#1e4e1e',
+      'editor.background':               '#020d04',
+      'editor.foreground':               '#c8ffc8',
+      'editorCursor.foreground':         '#00ff41',
+      'editor.lineHighlightBackground':  '#060f07',
+      'editor.selectionBackground':      '#002b0baa',
+      'editorLineNumber.foreground':     '#1a4a1a',
       'editorLineNumber.activeForeground':'#00ff41',
-      'editor.findMatchBackground':     '#00ff4133',
-      'editorBracketMatch.background':  '#00ff4122',
-      'editorBracketMatch.border':      '#00ff41',
-      'scrollbarSlider.background':     '#0f3a1440',
-      'scrollbarSlider.hoverBackground':'#00ff4130',
-      'editorGutter.background':        '#020d04',
-      'minimap.background':             '#020d04',
+      'editor.findMatchBackground':      '#00ff4133',
+      'editorBracketMatch.background':   '#00ff4118',
+      'editorBracketMatch.border':       '#00ff41',
+      'scrollbarSlider.background':      '#0d301040',
+      'scrollbarSlider.hoverBackground': '#00ff4128',
+      'editorGutter.background':         '#020d04',
+      'minimap.background':              '#020d04',
+      'editorWidget.background':         '#060f07',
+      'editorSuggestWidget.background':  '#060f07',
+      'editorSuggestWidget.border':      '#0d3010',
+      'editorSuggestWidget.selectedBackground':'#002b0b',
     }
   });
 
   editor = monaco.editor.create(document.getElementById('me'),{
-    value:'', language:'python', theme:'matrix',
-    fontSize: S.fontSize, tabSize: S.tabSize,
-    minimap:{ enabled:true },
-    scrollBeyondLastLine: false,
-    automaticLayout: true,
-    wordWrap: S.wrap,
-    formatOnPaste: true,
+    value:'',
+    language: currentEntry?.mono||'python',
+    theme:'matrix',
+    fontSize: CFG.fs, tabSize: CFG.ts,
+    wordWrap: CFG.wrap,
+    minimap:{ enabled: CFG.mini==='on' },
+    scrollBeyondLastLine:false,
+    automaticLayout:true,
+    formatOnPaste:true,
     renderWhitespace:'selection',
-    smoothScrolling: true,
+    smoothScrolling:true,
     cursorBlinking:'phase',
     cursorSmoothCaretAnimation:'on',
-    fontLigatures: true,
+    fontLigatures:true,
     bracketPairColorization:{ enabled:true },
     lineNumbers:'on',
-    glyphMargin: false,
+    glyphMargin:false,
   });
 
-  // shortcuts inside editor
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runCode);
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,  saveCode);
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,  ()=>downloadCode());
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT,  newTab);
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL,  togglePanel);
+  // Keybindings
+  editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.Enter, runCode);
+  editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.KeyS,  saveCode);
+  editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.KeyD,  ()=>downloadCode());
+  editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.KeyT,  ()=>newTab());
+  editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.KeyL,  ()=>togglePanel());
 
-  // restore or create first tab
-  if(!restoreTabs()) newTab(CATALOG[0]);
+  // Restore or init
+  if(!restoreTabs()){
+    // Wait for ENTRIES to load, then create default tab
+    const waitForEntries=setInterval(()=>{
+      if(ENTRIES.length>0){
+        clearInterval(waitForEntries);
+        const def=ENTRIES.find(e=>e.lang==='Python')||ENTRIES[0];
+        if(def) newTab(def);
+      }
+    },100);
+  }
 });
 
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  TABS
-// ═══════════════════════════════════════════════════
-function newTab(entry) {
-  const e = entry || currentEntry;
+// ════════════════════════════════════════════════════
+function newTab(entry){
+  const e=entry||currentEntry||ENTRIES[0];
+  if(!e) return;
   tc++;
-  const tab = { id:tc, entry:e, code:e.tpl, stdin:'' };
+  const tab={id:tc, entry:{...e}, compiler:e.compiler, code:e.tpl, stdin:''};
   tabs.push(tab);
   activateTab(tc);
   renderTabs();
 }
 
-function activateTab(id) {
-  if(activeId && editor) {
-    const cur = tabs.find(t=>t.id===activeId);
-    if(cur){ cur.code = editor.getValue(); cur.stdin = document.getElementById('si').value; }
+function activateTab(id){
+  if(activeId && editor){
+    const c=tabs.find(t=>t.id===activeId);
+    if(c){ c.code=editor.getValue(); c.stdin=document.getElementById('si').value; }
   }
-  activeId = id;
-  const tab = tabs.find(t=>t.id===id);
+  activeId=id;
+  const tab=tabs.find(t=>t.id===id);
   if(!tab) return;
-  currentEntry = tab.entry;
+  currentEntry={...tab.entry, compiler:tab.compiler};
   if(editor){
     editor.setValue(tab.code||'');
     monaco.editor.setModelLanguage(editor.getModel(), tab.entry.mono);
-    document.getElementById('si').value = tab.stdin||'';
+    document.getElementById('si').value=tab.stdin||'';
+    document.getElementById('copt').value=tab.copt||'';
   }
-  highlightPanel(tab.entry.compiler+'_'+tab.entry.name);
   syncQS(tab.entry);
+  populateVersions({...tab.entry, compiler:tab.compiler});
+  document.getElementById('vp').value=tab.compiler;
+  highlightPanel(tab.entry.lang);
   renderTabs();
-  document.getElementById('sb-lang').textContent = tab.entry.icon+' '+tab.entry.name;
+  updateSbLang();
 }
 
-function closeTab(id) {
-  tabs = tabs.filter(t=>t.id!==id);
-  if(tabs.length===0){ newTab(); return; }
+function closeTab(id){
+  tabs=tabs.filter(t=>t.id!==id);
+  if(!tabs.length){ newTab(); return; }
   if(activeId===id) activateTab(tabs[tabs.length-1].id);
   renderTabs();
 }
 
-function renderTabs() {
-  const bar = document.getElementById('tb');
-  const ntb = document.getElementById('ntb');
+function renderTabs(){
+  const bar=document.getElementById('tb');
+  const ntb=document.getElementById('ntb');
   bar.querySelectorAll('.tab').forEach(el=>el.remove());
   tabs.forEach(tab=>{
-    const el = document.createElement('div');
-    el.className = 'tab'+(tab.id===activeId?' on':'');
-    el.innerHTML = `<span>${tab.entry.icon} ${tab.entry.name}</span><span class="tab-x" data-id="${tab.id}">✕</span>`;
-    el.addEventListener('click', e=>{
+    const el=document.createElement('div');
+    el.className='tab'+(tab.id===activeId?' on':'');
+    el.innerHTML=
+      `<span>${tab.entry.icon} ${tab.entry.lang}</span>`+
+      `<span class="tab-x" data-id="${tab.id}">✕</span>`;
+    el.addEventListener('click',e=>{
       if(e.target.classList.contains('tab-x')){ closeTab(+e.target.dataset.id); return; }
       activateTab(tab.id);
     });
-    bar.insertBefore(el, ntb);
+    bar.insertBefore(el,ntb);
   });
 }
 
-// ═══════════════════════════════════════════════════
-//  LANGUAGE PANEL  (built after Wandbox list fetched)
-// ═══════════════════════════════════════════════════
-function buildLangPanel() {
-  const ll = document.getElementById('ll');
-  ll.innerHTML = '';
-  const cats = [...new Set(CATALOG.map(e=>e.cat))];
-  let visible = 0;
-  cats.forEach(cat=>{
-    const items = CATALOG.filter(e=>e.cat===cat);
-    if(!items.length) return;
-    const ch = document.createElement('div');
-    ch.className = 'cat'; ch.textContent = cat;
-    ll.appendChild(ch);
-    items.forEach(entry=>{
-      const avail = AVAIL.size===0 || AVAIL.has(entry.compiler);
-      const el = document.createElement('div');
-      el.className = 'li';
-      el.dataset.key = entry.compiler+'_'+entry.name;
-      el.innerHTML = `<span class="li-ico">${entry.icon}</span>
-        <span>${entry.name}</span>
-        <span class="li-ver">${entry.compiler.replace('-head','')}</span>
-        ${!avail?'<span class="li-badge" style="color:var(--red);border-color:var(--red)">N/A</span>':''}`;
-      el.addEventListener('click', ()=>switchEntry(entry));
-      ll.appendChild(el);
-      visible++;
-    });
-  });
-  document.getElementById('lc').textContent = visible+' langs';
-}
-
-function searchPanel(q) {
-  q = q.toLowerCase();
-  document.getElementById('ll').querySelectorAll('.li').forEach(el=>{
-    const txt = el.textContent.toLowerCase();
-    el.style.display = txt.includes(q) ? '' : 'none';
-  });
-  document.getElementById('ll').querySelectorAll('.cat').forEach(cat=>{
-    // hide category if all its siblings are hidden
-    let next = cat.nextElementSibling;
-    let anyVisible = false;
-    while(next && !next.classList.contains('cat')){
-      if(next.style.display!=='none') anyVisible = true;
-      next = next.nextElementSibling;
-    }
-    cat.style.display = anyVisible ? '' : 'none';
-  });
-}
-
-function highlightPanel(key) {
-  document.querySelectorAll('.li').forEach(el=>{
-    el.classList.toggle('on', el.dataset.key===key);
-  });
-}
-
-function switchEntry(entry) {
-  const cur = tabs.find(t=>t.id===activeId);
-  if(cur){
-    cur.code = editor.getValue();
-    // reset to template only if code is pristine
-    if(cur.code.trim() === (cur.entry.tpl||'').trim()) cur.code = entry.tpl;
-    cur.entry = entry;
-    cur.code = cur.code; // keep existing
-  }
-  currentEntry = entry;
-  if(editor){
-    if(cur && cur.code.trim() === (entry.tpl||'').trim()) editor.setValue(entry.tpl);
-    // else keep editor content
-    monaco.editor.setModelLanguage(editor.getModel(), entry.mono);
-  }
-  highlightPanel(entry.compiler+'_'+entry.name);
-  syncQS(entry);
-  renderTabs();
-  document.getElementById('sb-lang').textContent = entry.icon+' '+entry.name;
-}
-
-// ═══════════════════════════════════════════════════
-//  QUICK SELECT
-// ═══════════════════════════════════════════════════
-function buildQuickSelect() {
-  const qs = document.getElementById('qs');
-  qs.innerHTML = '';
-  const cats = [...new Set(CATALOG.map(e=>e.cat))];
-  cats.forEach(cat=>{
-    const og = document.createElement('optgroup');
-    og.label = '── '+cat;
-    CATALOG.filter(e=>e.cat===cat).forEach(e=>{
-      const o = document.createElement('option');
-      o.value = e.compiler+'_'+e.name;
-      o.textContent = e.icon+' '+e.name;
-      og.appendChild(o);
-    });
-    qs.appendChild(og);
-  });
-  qs.addEventListener('change', ()=>{
-    const key = qs.value;
-    const entry = CATALOG.find(e=>e.compiler+'_'+e.name===key);
-    if(entry) switchEntry(entry);
-  });
-}
-
-function syncQS(entry) {
-  document.getElementById('qs').value = entry.compiler+'_'+entry.name;
-}
-
-// ═══════════════════════════════════════════════════
-//  LANG SEARCH
-// ═══════════════════════════════════════════════════
-document.getElementById('ls').addEventListener('input', e=>searchPanel(e.target.value));
-
-// ═══════════════════════════════════════════════════
-//  RUN CODE  via Wandbox (100% free, no key)
-// ═══════════════════════════════════════════════════
-async function runCode() {
-  if(!editor) return;
-
-  const code   = editor.getValue().trim();
-  const stdin  = document.getElementById('si').value;
-  const entry  = currentEntry;
-
+// ════════════════════════════════════════════════════
+//  RUN CODE  via Wandbox — 100% free, no key
+// ════════════════════════════════════════════════════
+async function runCode(){
+  if(!editor||!currentEntry) return;
+  const code=editor.getValue().trim();
   if(!code){ toast('Write some code first!','w'); return; }
+
+  const compiler = document.getElementById('vp').value || currentEntry.compiler;
+  const stdin    = document.getElementById('si').value;
+  const copt     = document.getElementById('copt').value.trim();
 
   setRunning(true);
   setStatus('run','RUNNING…');
   clearOut();
 
   try {
-    const body = {
-      compiler: entry.compiler,
+    const body={
+      compiler,
       code,
       stdin,
-      'compiler-option-raw': (entry.opts||[]).join('\n'),
+      'compiler-option-raw': copt,
       save: false,
     };
 
-    const r = await fetch('https://wandbox.org/api/compile.json',{
+    const r=await fetch('https://wandbox.org/api/compile.json',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body),
+      body:JSON.stringify(body),
     });
 
-    if(!r.ok){ throw new Error(`Wandbox returned ${r.status} ${r.statusText}`); }
+    if(r.status===503||r.status===502)
+      throw new Error('Wandbox is temporarily unavailable (503). Try again in a moment.');
+    if(!r.ok)
+      throw new Error(`Wandbox returned HTTP ${r.status}`);
 
-    const d = await r.json();
-    renderResult(d, entry);
-  } catch(err) {
+    const d=await r.json();
+    renderResult(d, compiler);
+
+  } catch(err){
     setStatus('err','ERROR');
-    document.getElementById('po-err').textContent = '❌ '+err.message;
+    document.getElementById('po-err').innerHTML=
+      `<span style="color:var(--red)">❌ ${esc(err.message)}</span>\n\n`+
+      `<span style="color:var(--dim)">Tips:\n`+
+      `• Check your internet connection\n`+
+      `• Try a different compiler version\n`+
+      `• Wandbox free service may have rate limits</span>`;
     switchPane('err');
     toast('❌ '+err.message,'e');
   } finally {
@@ -754,139 +946,136 @@ async function runCode() {
   }
 }
 
-function renderResult(d, entry) {
-  // Wandbox fields: program_output, compiler_error, compiler_message, program_error, status, signal
-  const stdout  = (d.program_output  || '').trimEnd();
-  const stderr  = (d.program_error   || '').trimEnd();
-  const cErr    = (d.compiler_error  || '').trimEnd();
-  const cOut    = (d.compiler_output || '').trimEnd();
-  const exit    = d.status ?? '—';
-  const signal  = d.signal || '—';
-  const ok      = exit === '0' || exit === 0;
+function renderResult(d, compiler){
+  const stdout =(d.program_output ||'').trimEnd();
+  const stderr =(d.program_error  ||d.compiler_error||'').trimEnd();
+  const cout   =(d.compiler_output||'').trimEnd();
+  const exit   = d.status??'—';
+  const sig    = d.signal||'none';
+  const ok     = String(exit)==='0';
 
+  // STDOUT
   document.getElementById('po-out').innerHTML = stdout
     ? esc(stdout)
-    : '<span class="empty-hint">// (no stdout)</span>';
+    : '<span class="hint">// (no stdout)</span>';
 
-  const errTxt = [stderr, cErr].filter(Boolean).join('\n\n');
-  document.getElementById('po-err').innerHTML = errTxt
-    ? `<span style="color:var(--red)">${esc(errTxt)}</span>`
-    : '<span class="empty-hint">// (no stderr)</span>';
+  // STDERR  — merge program error + compiler error
+  const errAll=[stderr, (d.compiler_error||'').trimEnd()].filter(Boolean).join('\n\n--- Compiler ---\n');
+  document.getElementById('po-err').innerHTML = errAll
+    ? `<span style="color:var(--red)">${esc(errAll)}</span>`
+    : '<span class="hint">// (no stderr)</span>';
 
+  // INFO
   document.getElementById('po-inf').innerHTML =
-    `<span style="color:var(--dim)">Compiler:</span> ${esc(entry.compiler)}\n`+
+    `<span style="color:var(--dim)">Compiler   :</span> ${esc(compiler)}\n`+
     `<span style="color:var(--dim)">Exit status:</span> <span style="color:${ok?'var(--g)':'var(--red)'}">${exit}</span>\n`+
-    `<span style="color:var(--dim)">Signal:</span> ${signal}\n`+
-    (cOut ? `<span style="color:var(--dim)">Compiler output:</span>\n${esc(cOut)}\n` : '')+
-    `<span style="color:var(--dim)">Backend:</span> Wandbox (wandbox.org) — Free, No Key Required\n`;
+    `<span style="color:var(--dim)">Signal     :</span> ${sig}\n`+
+    `<span style="color:var(--dim)">Backend    :</span> Wandbox (wandbox.org) — Free, No Key\n`+
+    (cout?`\n<span style="color:var(--dim)">Compiler output:\n</span>${esc(cout)}`:'');
 
+  // Stats
   document.getElementById('sr').style.display='flex';
-  document.getElementById('sx').textContent = exit;
-  document.getElementById('ss').textContent = signal;
+  document.getElementById('sx').textContent=exit;
+  document.getElementById('ss').textContent=sig;
 
-  if(ok){
-    setStatus('ok','DONE ✓');
-    switchPane('out');
-  } else if(errTxt){
-    setStatus('err', exit==='0'?'DONE':'ERROR (exit '+exit+')');
-    switchPane('err');
-  } else {
-    setStatus('err','EXIT '+exit);
-    switchPane('out');
-  }
+  if(ok){ setStatus('ok','DONE ✓'); switchPane('out'); }
+  else   { setStatus('err',`EXIT ${exit}`); switchPane(errAll?'err':'out'); }
 }
 
 function clearOut(){
-  ['out','err','inf'].forEach(p=>document.getElementById('po-'+p).innerHTML='<span class="empty-hint">// running…</span>');
+  ['out','err','inf'].forEach(p=>
+    document.getElementById('po-'+p).innerHTML='<span class="hint">// running…</span>');
   document.getElementById('sr').style.display='none';
 }
 
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  UI HELPERS
-// ═══════════════════════════════════════════════════
-function setRunning(on) {
+// ════════════════════════════════════════════════════
+function setRunning(on){
   const btn=document.getElementById('runBtn');
-  const ri=document.getElementById('ri');
-  const rt=document.getElementById('rt');
   btn.disabled=on;
-  ri.innerHTML = on ? '<span class="sp"></span>' : '▶';
-  rt.textContent = on ? 'RUNNING' : 'RUN';
+  document.getElementById('ri').innerHTML=on?'<span class="sp"></span>':'▶';
+  document.getElementById('rt').textContent=on?'RUNNING':'RUN';
 }
-function setStatus(cls, msg){
-  document.getElementById('dot').className='dot '+(cls==='ok'?'ok':cls==='err'?'err':'run');
+function setStatus(cls,msg){
+  document.getElementById('dot').className='dot '+cls;
   document.getElementById('stxt').textContent=msg;
 }
-
-document.querySelectorAll('.ot').forEach(t=>t.addEventListener('click',()=>switchPane(t.dataset.p)));
+document.querySelectorAll('.ot').forEach(t=>
+  t.addEventListener('click',()=>switchPane(t.dataset.p)));
 function switchPane(p){
   document.querySelectorAll('.ot').forEach(t=>t.classList.toggle('on',t.dataset.p===p));
   document.querySelectorAll('.opane').forEach(el=>el.classList.toggle('on',el.id==='po-'+p));
 }
 
-let toastTimer;
+let toastT;
 function toast(msg,type){
   const el=document.getElementById('toast');
-  const colors={e:'var(--red)',w:'#ffb347',g:'var(--g)'};
-  const c=colors[type]||colors.g;
+  const c=type==='e'?'var(--red)':type==='w'?'#ffb347':'var(--g)';
   el.textContent=msg;
   el.style.cssText=`background:var(--bg3);border:1px solid ${c};color:${c};box-shadow:0 0 16px ${c}33`;
   el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),3200);
 }
-
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ═══════════════════════════════════════════════════
-//  SAVE / DOWNLOAD
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+//  SAVE / RESTORE / DOWNLOAD
+// ════════════════════════════════════════════════════
 function saveCode(){
   if(!editor) return;
-  // capture current
-  const cur = tabs.find(t=>t.id===activeId);
-  if(cur){ cur.code=editor.getValue(); cur.stdin=document.getElementById('si').value; }
-  localStorage.setItem('mc_tabs', JSON.stringify(tabs.map(t=>({
-    id:t.id, entryName:t.entry.name, entryComp:t.entry.compiler,
-    code:t.code, stdin:t.stdin
+  const cur=tabs.find(t=>t.id===activeId);
+  if(cur){ cur.code=editor.getValue(); cur.stdin=document.getElementById('si').value; cur.copt=document.getElementById('copt').value; }
+  localStorage.setItem('mc_tabs2', JSON.stringify(tabs.map(t=>({
+    id:t.id,
+    lang:t.entry.lang,
+    compiler:t.compiler,
+    code:t.code,
+    stdin:t.stdin||'',
+    copt:t.copt||'',
   }))));
-  localStorage.setItem('mc_active', activeId);
+  localStorage.setItem('mc_active2', activeId);
   toast('💾 All tabs saved!');
 }
 
 function restoreTabs(){
-  const raw = localStorage.getItem('mc_tabs');
+  const raw=localStorage.getItem('mc_tabs2');
   if(!raw) return false;
-  try {
-    const arr = JSON.parse(raw);
+  try{
+    const arr=JSON.parse(raw);
     if(!arr.length) return false;
-    const actId = +( localStorage.getItem('mc_active')||0 );
-    tabs = arr.map(t=>{
-      const entry = CATALOG.find(e=>e.name===t.entryName && e.compiler===t.entryComp) || CATALOG[0];
-      return { id:t.id, entry, code:t.code||entry.tpl, stdin:t.stdin||'' };
-    });
-    tc = Math.max(...tabs.map(t=>t.id));
-    const toAct = tabs.find(t=>t.id===actId)||tabs[tabs.length-1];
-    activateTab(toAct.id);
+    // wait for ENTRIES
+    const tryRestore=()=>{
+      if(!ENTRIES.length){ setTimeout(tryRestore,120); return; }
+      tabs=arr.map(t=>{
+        const entry=ENTRIES.find(e=>e.lang===t.lang)||ENTRIES[0];
+        return {id:t.id,entry:{...entry},compiler:t.compiler||entry.compiler,
+                code:t.code||entry.tpl,stdin:t.stdin||'',copt:t.copt||''};
+      });
+      tc=Math.max(...tabs.map(t=>t.id));
+      const actId=+(localStorage.getItem('mc_active2')||0);
+      const toAct=tabs.find(t=>t.id===actId)||tabs[tabs.length-1];
+      activateTab(toAct.id);
+    };
+    tryRestore();
     return true;
-  } catch(e){ return false; }
+  }catch(e){ return false; }
 }
 
 function downloadCode(){
-  if(!editor) return;
-  const code = editor.getValue();
-  const entry = currentEntry;
-  const fname = 'code.'+entry.ext;
-  const blob = new Blob([code],{type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href=url; a.download=fname; a.click();
-  URL.revokeObjectURL(url);
+  if(!editor||!currentEntry) return;
+  const code=editor.getValue();
+  const fname=`code.${currentEntry.ext}`;
+  const blob=new Blob([code],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=fname; a.click();
   toast('⬇ Downloaded as '+fname);
 }
 
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  PANEL TOGGLE
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 let panelOpen=true;
 function togglePanel(){
   panelOpen=!panelOpen;
@@ -894,67 +1083,73 @@ function togglePanel(){
 }
 document.getElementById('togLang').addEventListener('click',togglePanel);
 
-// ═══════════════════════════════════════════════════
-//  RESIZERS
-// ═══════════════════════════════════════════════════
-function makeResizer(handle, getEl, side){
+// ════════════════════════════════════════════════════
+//  DRAG RESIZE
+// ════════════════════════════════════════════════════
+function makeRz(handle,getEl,side){
   let down=false,sx=0,sw=0;
   handle.addEventListener('mousedown',e=>{
-    down=true; sx=e.clientX; sw=getEl().offsetWidth;
+    down=true;sx=e.clientX;sw=getEl().offsetWidth;
     handle.classList.add('drag');
     document.body.style.cssText='cursor:col-resize;user-select:none';
   });
-  document.addEventListener('mousemove',e=>{
+  addEventListener('mousemove',e=>{
     if(!down) return;
-    const dx=e.clientX-sx;
-    const nw=Math.max(160,Math.min(600,sw+(side==='l'?dx:-dx)));
-    getEl().style.width=nw+'px';
-    getEl().style.flex='none';
+    const nw=Math.max(140,Math.min(550,sw+(side==='l'?e.clientX-sx:sx-e.clientX)));
+    getEl().style.cssText=`width:${nw}px;flex:none`;
   });
-  document.addEventListener('mouseup',()=>{
-    if(down){ down=false; handle.classList.remove('drag'); document.body.style.cssText=''; }
+  addEventListener('mouseup',()=>{
+    if(!down)return;down=false;
+    handle.classList.remove('drag');document.body.style.cssText='';
   });
 }
-makeResizer(document.getElementById('rzL'), ()=>document.getElementById('lp'), 'l');
-makeResizer(document.getElementById('rzR'), ()=>document.getElementById('op'), 'r');
+makeRz(document.getElementById('rzL'),()=>document.getElementById('lp'),'l');
+makeRz(document.getElementById('rzR'),()=>document.getElementById('op'),'r');
 
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  SETTINGS MODAL
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 document.getElementById('cfgBtn').addEventListener('click',()=>{
-  document.getElementById('cf').value=S.fontSize;
-  document.getElementById('ct').value=S.tabSize;
-  document.getElementById('cw').value=S.wrap;
+  document.getElementById('cf').value=CFG.fs;
+  document.getElementById('ct').value=CFG.ts;
+  document.getElementById('cw').value=CFG.wrap;
+  document.getElementById('cm').value=CFG.mini;
   document.getElementById('mo').classList.add('open');
 });
 document.getElementById('mo-x').addEventListener('click',()=>document.getElementById('mo').classList.remove('open'));
 document.getElementById('mo').addEventListener('click',e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 document.getElementById('mo-ok').addEventListener('click',()=>{
-  S.fontSize = +document.getElementById('cf').value||14;
-  S.tabSize  = +document.getElementById('ct').value||4;
-  S.wrap     =  document.getElementById('cw').value||'on';
-  localStorage.setItem('mc_fs',S.fontSize);
-  localStorage.setItem('mc_ts',S.tabSize);
-  localStorage.setItem('mc_wr',S.wrap);
-  if(editor) editor.updateOptions({ fontSize:S.fontSize, tabSize:S.tabSize, wordWrap:S.wrap });
+  CFG.fs=+document.getElementById('cf').value||14;
+  CFG.ts=+document.getElementById('ct').value||4;
+  CFG.wrap=document.getElementById('cw').value||'on';
+  CFG.mini=document.getElementById('cm').value||'on';
+  Object.entries({mc_fs:CFG.fs,mc_ts:CFG.ts,mc_wr:CFG.wrap,mc_mi:CFG.mini})
+    .forEach(([k,v])=>localStorage.setItem(k,v));
+  if(editor) editor.updateOptions({fontSize:CFG.fs,tabSize:CFG.ts,wordWrap:CFG.wrap,minimap:{enabled:CFG.mini==='on'}});
   document.getElementById('mo').classList.remove('open');
-  toast('⚙ Settings applied!');
+  toast('⚙ Settings saved!');
 });
 
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  HEADER BUTTONS & GLOBAL KEYS
-// ═══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 document.getElementById('runBtn').addEventListener('click', runCode);
 document.getElementById('savBtn').addEventListener('click', saveCode);
 document.getElementById('dlBtn' ).addEventListener('click', downloadCode);
 document.getElementById('ntb'   ).addEventListener('click', ()=>newTab());
 
-document.addEventListener('keydown',e=>{
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.key!=='Enter') return;
   if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveCode(); }
   if((e.ctrlKey||e.metaKey)&&e.key==='d'){ e.preventDefault(); downloadCode(); }
   if((e.ctrlKey||e.metaKey)&&e.key==='l'){ e.preventDefault(); togglePanel(); }
-  if((e.ctrlKey||e.metaKey)&&e.key==='Enter') runCode();
+  if((e.ctrlKey||e.metaKey)&&e.key==='t'){ e.preventDefault(); newTab(); }
 });
+
+// ════════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════════
+loadWandbox();
 </script>
 </body>
 </html>
